@@ -1,0 +1,20 @@
+# Environments
+venv/
+env/
+.env
+
+# Python Cache
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Data and Models
+/data/
+/models/
+*.pt
+*.pth
+*.h5
