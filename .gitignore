@@ -13,8 +13,6 @@ __pycache__/
 Thumbs.db
 
 # Data and Models
-/data/
-/models/
 *.pt
 *.pth
 *.h5
