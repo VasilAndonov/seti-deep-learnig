@@ -1,0 +1,27 @@
+# Deep Learning
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Data Manipulation & Math
+numpy
+pandas
+scipy
+scikit-learn
+
+# Image Processing & Augmentation
+opencv-python
+albumentations
+
+# Hyperparameter Tuning
+optuna
+
+# Visualization & Interpretability
+matplotlib
+seaborn
+grad-cam
+
+# MLOps & Tracking
+dvc
+jupyter
+tqdm
+pyyaml
