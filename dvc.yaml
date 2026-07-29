@@ -1,0 +1,8 @@
+stages:
+  prepare_ml_data:
+    cmd: python3 src/ml_data_prep.py
+    deps:
+    - data/raw
+    - src/ml_data_prep.py
+    outs:
+    - data/processed/ml
