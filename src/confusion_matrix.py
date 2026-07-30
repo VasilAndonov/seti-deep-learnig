@@ -20,8 +20,8 @@ def run_phase1_evaluation():
     print(f"Evaluating on device: {device}")
 
     # 2. Load Data and Model
-    print("Loading test data and model weights...")
-    _, test_loader, classes = get_dataloaders(batch_size = 32)
+    print("Loading validation data and model weights...")
+    _, valid_loader, classes = get_dataloaders(batch_size = 32)
     
     model = SETIEfficientNet(num_classes = len(classes)).to(device)
     
@@ -31,12 +31,12 @@ def run_phase1_evaluation():
     model.eval()
 
     # 3. Gather Predictions
-    print("Running inference on the test set...")
+    print("Running inference on the validation set...")
     all_preds = []
     all_labels = []
     
     with torch.no_grad():
-        for inputs, labels in test_loader:
+        for inputs, labels in valid_loader:
             inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
             _, predicted = torch.max(outputs, 1)
@@ -60,7 +60,7 @@ def run_phase1_evaluation():
                 xticklabels = classes, yticklabels = classes,
                 annot_kws = {"size": 12})
     
-    plt.title('Confusion Matrix: EfficientNet-B0 (94.43% Test Acc)', fontsize = 16, pad = 15)
+    plt.title('Confusion Matrix: EfficientNet-B0 (94.43% Valid Acc)', fontsize = 16, pad = 15)
     plt.ylabel('True Signal Type', fontsize = 12, fontweight = 'bold')
     plt.xlabel('Predicted Signal Type', fontsize = 12, fontweight = 'bold')
     plt.xticks(rotation = 45, ha = 'right', rotation_mode = 'anchor')

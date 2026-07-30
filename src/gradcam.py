@@ -53,7 +53,7 @@ def gradcam():
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     print(f"Running Grad-CAM on device: {device}")
     
-    _, test_loader, classes = get_dataloaders(batch_size = 1) 
+    _, valid_loader, classes = get_dataloaders(batch_size = 1) 
     model = SETIEfficientNet(num_classes = len(classes)).to(device)
     model.load_state_dict(torch.load("models/seti_efficientnet_best.pth", map_location = device))
     model.eval()
@@ -64,7 +64,7 @@ def gradcam():
     print("Searching for signals to analyze...")
     successful_samples = {}
     
-    for inputs, labels in test_loader:
+    for inputs, labels in valid_loader:
         inputs, labels = inputs.to(device), labels.to(device)
         outputs = model(inputs)
         _, predicted = torch.max(outputs, 1)

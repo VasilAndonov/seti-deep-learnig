@@ -16,7 +16,7 @@ def visualize_errors():
     print(f"Running  Error Analysis on device: {device}")
     
     # 1. Load Data and Model
-    _, test_loader, classes = get_dataloaders(batch_size = 32)
+    _, valid_loader, classes = get_dataloaders(batch_size = 32)
     model = SETIEfficientNet(num_classes = len(classes)).to(device)
     model.load_state_dict(torch.load("models/seti_efficientnet_best.pth", map_location = device))
     model.eval()
@@ -25,10 +25,10 @@ def visualize_errors():
     diverse_errors = []
     fallback_errors = []
 
-    print("Scanning test set for model misclassifications...")
+    print("Scanning validation set for model misclassifications...")
     
     with torch.no_grad():
-        for inputs, labels in test_loader:
+        for inputs, labels in valid_loader:
             inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
             _, predicted = torch.max(outputs, 1)

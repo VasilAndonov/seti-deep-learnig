@@ -4,7 +4,6 @@ Model Training Loop.
 """
 
 import os
-
 import time
 
 import torch
@@ -29,7 +28,7 @@ def train_model():
     BATCH_SIZE = 32
     LEARNING_RATE = 1e-3
 
-    train_loader, test_loader, classes = get_dataloaders(batch_size = BATCH_SIZE)
+    train_loader, valid_loader, classes = get_dataloaders(batch_size = BATCH_SIZE)
     model = SETIEfficientNet(num_classes = len(classes)).to(device)
 
     # Label smoothing helps prevent overconfidence on noisy static background
@@ -46,7 +45,7 @@ def train_model():
     scaler = torch.cuda.amp.GradScaler() if use_amp else None
 
     print(f"\nStarting 100-Epoch Training...")
-    best_test_acc = 0.0
+    best_valid_acc = 0.0
 
     for epoch in range(EPOCHS):
         start_time = time.time()
@@ -82,9 +81,9 @@ def train_model():
 
         # --- Validation Phase ---
         model.eval()
-        correct_test, total_test = 0, 0
+        correct_valid, total_valid = 0, 0
         with torch.no_grad():
-            for inputs, labels in test_loader:
+            for inputs, labels in valid_loader:
                 inputs, labels = inputs.to(device), labels.to(device)
                 
                 if use_amp:
@@ -94,10 +93,10 @@ def train_model():
                     outputs = model(inputs)
                     
                 _, predicted = torch.max(outputs, 1)
-                total_test += labels.size(0)
-                correct_test += (predicted == labels).sum().item()
+                total_valid += labels.size(0)
+                correct_valid += (predicted == labels).sum().item()
 
-        test_acc = correct_test / total_test
+        valid_acc = correct_valid / total_valid
 
         # Step the learning rate scheduler
         scheduler.step()
@@ -109,15 +108,15 @@ def train_model():
         time_str = f"{mins}m {secs:02d}s" if mins > 0 else f"{secs}s"
 
         print(f"Epoch [{epoch+1:03d}/{EPOCHS}] | LR: {scheduler.get_last_lr()[0]:.6f} | "
-              f"Time: {time_str} | Train Acc: {train_acc*100:.2f}% | Test Acc: {test_acc*100:.2f}%")
+              f"Time: {time_str} | Train Acc: {train_acc*100:.2f}% | Valid Acc: {valid_acc*100:.2f}%")
         
         # Save the model whenever a new best validation accuracy is reached
-        if test_acc > best_test_acc:
-            best_test_acc = test_acc
-            os.makedirs("models", exist_ok=True)
+        if valid_acc > best_valid_acc:
+            best_valid_acc = valid_acc
+            os.makedirs("models", exist_ok = True)
             torch.save(model.state_dict(), "models/seti_efficientnet_best.pth")
 
-    print(f"\nTraining Complete. Best Test Accuracy: {best_test_acc*100:.2f}%")
+    print(f"\nTraining Complete. Best Valid Accuracy: {best_valid_acc*100:.2f}%")
     print("Best model checkpoint saved to models/seti_efficientnet_best.pth")
 
 if __name__ == "__main__":

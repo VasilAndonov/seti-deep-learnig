@@ -48,7 +48,7 @@ def get_dataloaders(data_dir = "data/raw", batch_size = 32):
         transforms.Normalize(mean = [0.5], std = [0.5])
     ])
 
-    test_transform = transforms.Compose([
+    valid_transform = transforms.Compose([
         transforms.ToPILImage(),
         transforms.Resize((224, 224)), 
         transforms.ToTensor(), 
@@ -56,9 +56,9 @@ def get_dataloaders(data_dir = "data/raw", batch_size = 32):
     ])
 
     train_dataset = SETIDataset(data_dir, split = "train", transform = train_transform)
-    test_dataset = SETIDataset(data_dir, split = "test", transform = test_transform)
+    valid_dataset = SETIDataset(data_dir, split = "valid", transform = valid_transform)
 
     train_loader = DataLoader(train_dataset, batch_size = batch_size, shuffle = True, num_workers = 2)
-    test_loader = DataLoader(test_dataset, batch_size = batch_size, shuffle = False, num_workers = 2)
+    valid_loader = DataLoader(valid_dataset, batch_size = batch_size, shuffle = False, num_workers = 2)
 
-    return train_loader, test_loader, train_dataset.classes
+    return train_loader, valid_loader, train_dataset.classes

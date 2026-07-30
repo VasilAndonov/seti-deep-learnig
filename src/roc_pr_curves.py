@@ -20,7 +20,7 @@ def plot_roc_pr_curves():
     print(f"Generating ROC and PR curves on device: {device}")
 
     # 1. Load Data and Best Saved Model
-    _, test_loader, classes = get_dataloaders(batch_size = 32)
+    _, valid_loader, classes = get_dataloaders(batch_size = 32)
     n_classes = len(classes)
     
     model = SETIEfficientNet(num_classes = n_classes).to(device)
@@ -33,7 +33,7 @@ def plot_roc_pr_curves():
 
     print("Running inference to collect class probabilities...")
     with torch.no_grad():
-        for inputs, labels in test_loader:
+        for inputs, labels in valid_loader:
             inputs = inputs.to(device)
             outputs = model(inputs)
             probs = F.softmax(outputs, dim = 1)

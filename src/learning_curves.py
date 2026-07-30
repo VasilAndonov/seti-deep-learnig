@@ -13,9 +13,9 @@ def parse_and_plot():
     with open(log_file, "r") as f:
         log_data = f.read()
 
-    # Find all occurrences of "Train Acc: XX.XX%" and "Test Acc: YY.YY%"
+    # Find all occurrences of "Train Acc: XX.XX%" and "Valid Acc: YY.YY%"
     train_accs = [float(x) for x in re.findall(r"Train Acc: (\d+\.\d+)%", log_data)]
-    test_accs = [float(x) for x in re.findall(r"Test Acc: (\d+\.\d+)%", log_data)]
+    valid_accs = [float(x) for x in re.findall(r"Valid Acc: (\d+\.\d+)%", log_data)]
 
     epochs = list(range(1, len(train_accs) + 1))
     
@@ -28,11 +28,11 @@ def parse_and_plot():
 
     # Panel 1: Accuracy
     ax1.plot(epochs, train_accs, label = "Train Accuracy", color = "#1f77b4", linewidth = 2)
-    ax1.plot(epochs, test_accs, label = "Test Accuracy", color = "#ff7f0e", linewidth = 2)
+    ax1.plot(epochs, valid_accs, label = "Validation Accuracy", color = "#ff7f0e", linewidth = 2)
 
     # Find the best epoch
-    best_acc = max(test_accs)
-    best_epoch = test_accs.index(best_acc) + 1
+    best_acc = max(valid_accs)
+    best_epoch = valid_accs.index(best_acc) + 1
     
     ax1.scatter([best_epoch], [best_acc], color = "red", s = 100, zorder = 5, label = f"Best Model ({best_acc}% @ Ep {best_epoch})")
     ax1.annotate(f"Best Weights Saved\n({best_acc}%)", 
