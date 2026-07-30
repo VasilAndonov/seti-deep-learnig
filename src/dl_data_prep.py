@@ -1,60 +1,64 @@
 """
-dl_data_prep.py
-Deep Learning PyTorch Data Pipeline for SETI Classification
-
-Configures PyTorch ImageFolder datasets and DataLoaders.
-Implements physics-aware augmentations suitable for astronomical spectrograms.
+Data Pipeline for Deep Learning.
+Resizes images to 224x224 and applies data augmentations.
 """
 
 import os
+import cv2
+
 import torch
-from torchvision import transforms, datasets
-from torch.utils.data import DataLoader
+from torch.utils.data import Dataset, DataLoader
+from torchvision import transforms
 
-# --- CONFIGURATION ---
-RAW_DATA_DIR = "data/raw/" 
-IMG_SIZE_DL = (256, 256) # Power of 2, optimal for CNN feature maps
+class SETIDataset(Dataset):
+    def __init__(self, root_dir, split = "train", transform = None):
+        self.root_dir = os.path.join(root_dir, split)
+        self.transform = transform
+        self.classes = sorted(os.listdir(self.root_dir))
+        self.filepaths, self.labels = [], []
 
-def get_dl_dataloaders(batch_size = 32):
-    """
-    Creates PyTorch DataLoaders reading natively from train/valid/test directories.
-    Applies Physics-Aware Data Augmentation (disables flips to preserve Doppler drift).
-    """
-    print(f">>> Initializing Deep Learning DataLoaders (Resolution: {IMG_SIZE_DL[0]}x{IMG_SIZE_DL[1]})...")
-    
-    # Safe augmentations: Small rotations and noise simulation via ColorJitter
-    train_transforms = transforms.Compose([
-        transforms.Resize(IMG_SIZE_DL),
-        transforms.RandomRotation(degrees = 5), 
-        transforms.ColorJitter(brightness = 0.2, contrast = 0.2), 
+        for label, cls in enumerate(self.classes):
+            cls_dir = os.path.join(self.root_dir, cls)
+            if not os.path.isdir(cls_dir): 
+                continue
+            
+            for img_name in os.listdir(cls_dir):
+                self.filepaths.append(os.path.join(cls_dir, img_name))
+                self.labels.append(label)
+
+    def __len__(self): 
+        return len(self.filepaths)
+
+    def __getitem__(self, idx):
+        image = cv2.imread(self.filepaths[idx], cv2.IMREAD_GRAYSCALE)
+        if self.transform:
+            image = self.transform(image)
+        return image, self.labels[idx]
+
+def get_dataloaders(data_dir = "data/raw", batch_size = 32):
+    print("Initializing PyTorch DataLoaders...")
+
+    train_transform = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.Resize((224, 224)),
+        transforms.RandomHorizontalFlip(p = 0.5),
+        transforms.RandomVerticalFlip(p = 0.5),
+        transforms.RandomAffine(degrees = 0, translate = (0.05, 0.05)),
         transforms.ToTensor(),
-        # ImageNet standardization (required for transfer learning backbones like ResNet)
-        transforms.Normalize(mean = [0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225]) 
+        transforms.Normalize(mean = [0.5], std = [0.5])
     ])
-    
-    # Validation and Test sets don't have to be augmented, only resized and normalized
-    val_transforms = transforms.Compose([
-        transforms.Resize(IMG_SIZE_DL),
-        transforms.ToTensor(),
-        transforms.Normalize(mean = [0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225])
-    ])
-    
-    # PyTorch automatically maps subfolder names to class labels
-    train_dataset = datasets.ImageFolder(root = os.path.join(RAW_DATA_DIR, 'train'), transform = train_transforms)
-    val_dataset = datasets.ImageFolder(root = os.path.join(RAW_DATA_DIR, 'valid'), transform = val_transforms)
-    test_dataset = datasets.ImageFolder(root = os.path.join(RAW_DATA_DIR, 'test'), transform = val_transforms)
-    
-    # Create DataLoaders
-    train_loader = DataLoader(train_dataset, batch_size = batch_size, shuffle = True, num_workers = 2, pin_memory = True)
-    val_loader = DataLoader(val_dataset, batch_size = batch_size, shuffle = False, num_workers = 2, pin_memory = True)
-    test_loader = DataLoader(test_dataset, batch_size = batch_size, shuffle = False, num_workers=2, pin_memory = True)
-    
-    print(f"DL Pipeline Ready: Train ({len(train_dataset)}), Val ({len(val_dataset)}), Test ({len(test_dataset)})")
-    
-    return train_loader, val_loader, test_loader
 
-if __name__ == "__main__":
-    # Test script execution
-    train_dl, val_dl, test_dl = get_dl_dataloaders()
-    images, labels = next(iter(train_dl))
-    print(f"Tensor batch shape: {images.shape} | Labels batch shape: {labels.shape}")
+    test_transform = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.Resize((224, 224)), 
+        transforms.ToTensor(), 
+        transforms.Normalize(mean = [0.5], std = [0.5])
+    ])
+
+    train_dataset = SETIDataset(data_dir, split = "train", transform = train_transform)
+    test_dataset = SETIDataset(data_dir, split = "test", transform = test_transform)
+
+    train_loader = DataLoader(train_dataset, batch_size = batch_size, shuffle = True, num_workers = 2)
+    test_loader = DataLoader(test_dataset, batch_size = batch_size, shuffle = False, num_workers = 2)
+
+    return train_loader, test_loader, train_dataset.classes
