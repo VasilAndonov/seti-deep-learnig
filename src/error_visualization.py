@@ -80,5 +80,7 @@ def visualize_errors():
     plt.savefig(save_path, dpi = 300, bbox_inches = 'tight')
     print(f"Error grid saved to: {save_path}")
 
+    plt.show()
+
 if __name__ == "__main__":
     visualize_errors()

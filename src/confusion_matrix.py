@@ -72,5 +72,7 @@ def run_phase1_evaluation():
     plt.savefig(save_path, dpi = 300, bbox_inches = 'tight')
     print(f"Plot saved to: {save_path}")
 
+    plt.show()
+
 if __name__ == "__main__":
     run_phase1_evaluation()
