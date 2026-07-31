@@ -76,7 +76,7 @@ def visualize_errors():
     plt.tight_layout(pad = 3.0, w_pad = 2.0, h_pad = 2.0)
     
     # 4. Save the plot
-    save_path = "plots/03_error_analysis_grid.png"
+    save_path = "plots/error_analysis_grid.png"
     plt.savefig(save_path, dpi = 300, bbox_inches = 'tight')
     print(f"Error grid saved to: {save_path}")
 

@@ -35,7 +35,7 @@ def visualize_augmentations():
     plt.tight_layout()
     
     # Save the plot to the plots folder
-    save_path = "plots/01_augmented_training_samples.png"
+    save_path = "plots/augmented_training_samples.png"
     plt.savefig(save_path, dpi = 300, bbox_inches = 'tight')
     print(f"Plot saved to: {save_path}")
 

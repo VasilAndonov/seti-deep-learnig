@@ -13,15 +13,19 @@ class SETIDatasetV2(Dataset):
     def __init__(self, root_dir, split = "train", transform = None):
         self.root_dir = os.path.join(root_dir, split)
         self.transform = transform
-        self.classes = sorted(os.listdir(self.root_dir))
+        
+        self.classes = sorted([
+            d for d in os.listdir(self.root_dir) 
+            if os.path.isdir(os.path.join(self.root_dir, d)) and not d.startswith('.')
+        ])
+        
         self.filepaths, self.labels = [], []
 
         for label, cls in enumerate(self.classes):
             cls_dir = os.path.join(self.root_dir, cls)
-            if not os.path.isdir(cls_dir): 
-                continue
-            
             for img_name in os.listdir(cls_dir):
+                if img_name.startswith('.'):
+                    continue
                 self.filepaths.append(os.path.join(cls_dir, img_name))
                 self.labels.append(label)
 
